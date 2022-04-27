@@ -1,6 +1,8 @@
 const { User } = require("../models/user");
 const bcrypt = require('bcrypt')
-const jwt = require('jsonwebtoken')
+const jwt = require('jsonwebtoken');
+const { Product } = require("../models/product");
+
 
 class UserController {
     static async register(req, res, next) {
@@ -8,7 +10,7 @@ class UserController {
             if (!req.body.email || !req.body.password || !req.body.name || !req.body.phoneNumber) {
                 throw ({
                     code: 400,
-                    message: 'please fill all the form registration'
+                    message: 'please fill all the form registration including email password name and phone number'
                 })
             }
             const { email, password, name, phoneNumber } = req.body
@@ -23,7 +25,7 @@ class UserController {
             }
             data.kart = []
             let user = await User.registerUser(data)
-            user = await user.findOneUserById(user.insertedId)
+            user = await User.findOneUserById(user.insertedId)
             const access_token = jwt.sign({ id: user._id }, 'secret')
             res.status(201).json({
                 access_token,
@@ -31,6 +33,7 @@ class UserController {
                 user
             })
         } catch (error) {
+            console.log(error);
             if (error.code === 400) {
                 res.status(400).json({ message: error.message })
             } else {
@@ -59,7 +62,7 @@ class UserController {
             if (!bcrypt.compareSync(data.password, user.password)) {
                 throw ({
                     code: 400,
-                    message: 'invalid email or password'
+                    message: 'invalid password'
                 })
             }
             delete user.password
@@ -79,9 +82,56 @@ class UserController {
 
     static async BuyProduct(req, res, next) {
         try {
-
+            if (!req.body.size ) {
+                throw ({
+                    code: 400,
+                    message: 'please select the size of the shirt'
+                })
+            }
+            let s = req.body.size
+            if(s !== "M" && s !== "L" && s !== "X"&& s !== "XL"){
+                throw ({
+                    code: 400,
+                    message: 'please select the size of the shirt properly'
+                })
+            }
+            if (!req.body.gender) {
+                throw ({
+                    code: 400,
+                    message: 'please select the gender of the shirt'
+                })
+            }
+            let g = req.body.gender
+            if(g !== "Male" && g !== "Female"){
+                throw ({
+                    code: 400,
+                    message: 'please select the gender of the shirt properly'
+                })
+            }
+            const  productId  = req.params.id
+            await Product.findProductById(productId)
+            const product ={
+                productId,
+                size:req.body.size,
+                genderProduct:req.body.gender
+            }
+            const {id} = req.auth
+            await User.updateUserKart(id,product)
+            const user = await User.findOneUserById(id)
+            res.status(200).json({
+                message:"success buying new product",
+                user
+            })
         } catch (error) {
-
+            if(error.name === 'BSONTypeError' ){
+                res.status(404).json({
+                    message:'Product not found'
+                })
+            }else if(error.code === 400) {
+                res.status(400).json({ message: error.message })
+            } else {
+                res.status(500).json({ message: 'something error in buying product' })
+            }
         }
     }
 }

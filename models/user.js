@@ -28,6 +28,7 @@ class User {
 
     static async findOneUser(email) {
         try {
+            const db = getDataBase()
             const user = await db
                 .collection('users')
                 .findOne({ email: email })
