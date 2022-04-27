@@ -109,7 +109,19 @@ class UserController {
                 })
             }
             const  productId  = req.params.id
-            await Product.findProductById(productId)
+            const found = await Product.findProductById(productId)
+            if(!found.availableGenders.filter(e=>e === req.body.gender).length){
+                throw ({
+                    code: 400,
+                    message: 'shirt for this gender is not available'
+                })
+            }
+            if(!found.availableSizes.filter(e=>e === req.body.size).length){
+                throw ({
+                    code: 400,
+                    message: 'shirt for this size is not available'
+                })
+            }
             const product ={
                 productId,
                 size:req.body.size,

@@ -44,7 +44,9 @@ class User {
             const user = await db
                 .collection('users')
                 .findOne({ _id: ObjectId(id) })
-            delete user.password
+            if(user){
+                delete user.password
+            }
             return user
         } catch (error) {
             throw (error)
