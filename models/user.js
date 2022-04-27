@@ -74,7 +74,7 @@ class User {
                             kart: user.kart
                         },
                     })
-            return 'success updating saldo'
+            return 'success updating kart'
         } catch (error) {
             throw (error)
         }

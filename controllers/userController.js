@@ -124,6 +124,9 @@ class UserController {
             }
             const product ={
                 productId,
+                productName:found.name,
+                productPrice:found.price,
+                productImage:found.imageUrl,
                 size:req.body.size,
                 genderProduct:req.body.gender
             }
